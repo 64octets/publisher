@@ -26,6 +26,7 @@ class EditionsController < InheritedResources::Base
   alias_method :metadata, :show
   alias_method :history, :show
   alias_method :admin, :show
+  alias_method :unpublish, :show
 
   def new
     @publication = build_resource
@@ -181,6 +182,21 @@ class EditionsController < InheritedResources::Base
     @comparison = @resource.previous_siblings.last
   end
 
+  def process_unpublish
+    edition = Edition.find(params[:id])
+    success = UnpublishService.call(edition.artefact, current_user, redirect_url)
+
+    if success
+      notice = "Content unpublished"
+      notice << " and redirected" if redirect_url.present?
+      flash[:notice] = notice
+      redirect_to root_path
+    else
+      flash[:alert] = "Content could not be unpublished"
+      redirect_to unpublish_edition_path(edition)
+    end
+  end
+
 protected
 
   def permitted_params(subtype: nil)
@@ -330,6 +346,10 @@ protected
   end
 
 private
+
+  def redirect_url
+    params.fetch("redirect_url", "").sub(%r{^https?://(www\.)?gov\.uk/}, "/")
+  end
 
   def tagging_update_form
     Tagging::TaggingUpdateForm.build_from_publishing_api(@resource.artefact.content_id)
