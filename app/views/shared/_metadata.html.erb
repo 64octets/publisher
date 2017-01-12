@@ -1,9 +1,22 @@
-<div class="row">
-  <div class="col-md-7">
-    <% publication.attributes.slice('slug', 'kind').each do |key, value| %>
-      <%= content_tag :label, key.humanize, for: key %>
-      <%= text_field_tag key, value, class: "form-control add-bottom-margin", disabled: 'disabled' %>
-    <% end %>
+<% if publication.draft? %>
+  <%= semantic_bootstrap_nested_form_for(@artefact, :html => { :class => 'artefact', :id => 'edit_artefact'}) do |f| %>
+    <div class="row">
+      <div class="col-md-12">
+        <%= f.input :id, as: :hidden, input_html: { value: @artefact.id } %>
+        <%= f.input :slug, :input_html => { :class => "input-md-6" } %>
+        <%= f.input :language, :collection => {"English" => "en", "Welsh" => "cy"}, :as => :select, :input_html => { :class => "input-md-4" }, :include_blank => false %>
+      </div>
+    </div>
+    <%= f.submit 'Update metadata', class: "btn btn-success btn-large" %>
+    <%= link_to "View in Panopticon", panopticon_edit_url(publication), :class => "btn btn-primary" %>
+  <% end %>
+<% else %>
+  <div class="row">
+    <div class="col-md-7">
+      <% @artefact.attributes.slice('slug', 'kind', 'language').each do |key, value| %>
+        <%= content_tag :label, key.humanize, for: key %>
+        <%= text_field_tag key, value, class: "form-control add-bottom-margin", disabled: 'disabled' %>
+      <% end %>
+    </div>
   </div>
-</div>
-<%= link_to "Edit in Panopticon", panopticon_edit_url(publication), :class => "btn btn-primary" %>
+<% end %>
