@@ -48,7 +48,7 @@ class Edition
     all_of(for_user(user).selector, internal_search(term).selector)
   }
 
-  after_save :notify_update_publishing_api
+  after_save :notify_update_publishing_api if self.latest_edition?
 
   def publish_anonymously!
     if can_publish?
